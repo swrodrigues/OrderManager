@@ -49,7 +49,9 @@ With `SPRING_PROFILES_ACTIVE=demo` (the default in `.env.example`) an empty data
    *Load more*: keyset paging, so every page is an index range scan and page 20 is as fast as page 1.
 3. **Bulk allocate NEW orders:** oldest first, one transaction per order. Orders without enough stock stay NEW
    and are counted as short.
-4. **Row actions:** Allocate → Pick → Pack → Ship → Deliver. Each click swaps one table row (~1 KB).
+4. **Row actions:** Allocate → Pick → Pack → Ship → Deliver. Each click swaps one table row (~1 KB). Clicked by
+   mistake? The changed row shows **↶ Undo** (also on the order page): it reverts that one step, puts stock back,
+   and is audited. Allowed for 5 minutes, for the same user or an admin, and only if nothing changed since.
 5. **Conflict:** open the same order in two tabs, click *Allocate* in both. The second tab shows
    *"This order changed — reload"*. Stock is reserved once.
 6. **Import:** download the sample CSV, upload it, then upload it again (rejected as a duplicate). Upload a file
@@ -86,7 +88,7 @@ From [`BUILD_LOG.md`](BUILD_LOG.md) (2026-10-25 and 26, local time):
 | Container image hardening, Spring Boot 4, PostgreSQL 18 (next day) | 26 Oct, until 10:16 |
 | Java 27 | 26 Oct, 10:24–10:39 |
 
-About 2,900 lines of production Java and 2,200 lines of tests, 192 tests in 20 classes.
+About 3,000 lines of production Java and 2,500 lines of tests, 209 tests in 21 classes.
 
 ## Independent review and fixes
 

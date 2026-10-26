@@ -72,7 +72,23 @@ public class OrderController {
             return "orders/detail :: panel";
         }
         model.addAttribute("r", OrderRow.of(order));
+        model.addAttribute("undoable", true); // the user just made this step, so they may undo it
         return "orders/rows :: single";
+    }
+
+    /** Reverts the last step after a mis-click; returns the row (or panel) plus a message for the flash area. */
+    @PostMapping("/orders/{id}/undo")
+    public String undo(@PathVariable long id, @RequestParam long version,
+                       @RequestParam(defaultValue = "row") String view, Model model) {
+        CustomerOrder order = orders.undo(id, version);
+        audit.last("order", id).ifPresent(u ->
+                model.addAttribute("message", "Undone: " + u.getFromStatus() + " → " + u.getToStatus()));
+        if ("detail".equals(view)) {
+            addDetail(orders.get(id), model);
+            return "orders/detail :: panelWithMessage";
+        }
+        model.addAttribute("r", OrderRow.of(order));
+        return "orders/rows :: undone";
     }
 
     @PostMapping("/orders/bulk-allocate")
@@ -119,5 +135,6 @@ public class OrderController {
         model.addAttribute("order", order);
         model.addAttribute("next", OrderStateMachine.next(order.getStatus()));
         model.addAttribute("history", audit.history("order", order.getId()));
+        model.addAttribute("undoable", orders.canUndo(order.getId()));
     }
 }

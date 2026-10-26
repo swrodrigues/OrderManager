@@ -2,6 +2,7 @@ package com.ordermanager.common;
 
 import com.ordermanager.inventory.InsufficientStockException;
 import com.ordermanager.order.InvalidTransitionException;
+import com.ordermanager.order.UndoNotAllowedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -36,6 +37,11 @@ public class GlobalErrorHandler {
 
     @ExceptionHandler(InvalidTransitionException.class)
     public ModelAndView invalidTransition(InvalidTransitionException ex, HttpServletRequest req, HttpServletResponse res) {
+        return message(req, res, HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(UndoNotAllowedException.class)
+    public ModelAndView undoNotAllowed(UndoNotAllowedException ex, HttpServletRequest req, HttpServletResponse res) {
         return message(req, res, HttpStatus.CONFLICT, ex.getMessage());
     }
 

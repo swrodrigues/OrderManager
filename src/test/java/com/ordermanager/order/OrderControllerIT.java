@@ -99,6 +99,52 @@ class OrderControllerIT extends IntegrationTest {
     }
 
     @Test
+    void rowAfterAnActionOffersUndo() throws Exception {
+        long id = data.order("EXT-1", Map.of("A", 3));
+        mvc.perform(transition(id, "ALLOCATED", 0, "row"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/orders/" + id + "/undo")))
+                .andExpect(content().string(containsString("Undo")));
+    }
+
+    @Test
+    void undoFromARowReturnsTheRowAndAMessage() throws Exception {
+        long id = data.order("EXT-1", Map.of("A", 3));
+        mvc.perform(transition(id, "ALLOCATED", 0, "row")).andExpect(status().isOk());
+
+        mvc.perform(undo(id, orders.get(id).getVersion(), "row"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("s-NEW")))
+                .andExpect(content().string(not(containsString("/undo"))))
+                .andExpect(content().string(containsString("hx-swap-oob")))
+                .andExpect(content().string(containsString("Undone: ALLOCATED → NEW")));
+        assertThat(jdbc.queryForObject("select reserved from sku where id=?", Integer.class, skuA)).isZero();
+    }
+
+    @Test
+    void undoThatIsNotAllowedShowsWhy() throws Exception {
+        long id = data.order("EXT-1", Map.of("A", 3));
+        mvc.perform(undo(id, 0, "row"))
+                .andExpect(status().isConflict())
+                .andExpect(header().string("HX-Retarget", "#flash"))
+                .andExpect(content().string(containsString("There is nothing to undo on this order")));
+    }
+
+    @Test
+    void detailPageOffersUndoOnlyWhileAllowed() throws Exception {
+        long id = data.order("EXT-1", Map.of("A", 3));
+        mvc.perform(get("/orders/{id}", id)).andExpect(content().string(not(containsString("/undo"))));
+        mvc.perform(transition(id, "ALLOCATED", 0, "detail")).andExpect(status().isOk())
+                .andExpect(content().string(containsString("/orders/" + id + "/undo")));
+        mvc.perform(get("/orders/{id}", id)).andExpect(content().string(containsString("/orders/" + id + "/undo")));
+
+        mvc.perform(undo(id, orders.get(id).getVersion(), "detail"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"order-panel\"")))
+                .andExpect(content().string(containsString("Undone: ALLOCATED → NEW")));
+    }
+
+    @Test
     void transitionFromDetailReturnsPanel() throws Exception {
         long id = data.order("EXT-1", Map.of("A", 3));
         mvc.perform(transition(id, "ALLOCATED", 0, "detail"))
@@ -229,6 +275,11 @@ class OrderControllerIT extends IntegrationTest {
     @Test
     void malformedIdGives400() throws Exception {
         mvc.perform(get("/orders/abc")).andExpect(status().isBadRequest());
+    }
+
+    private static org.springframework.test.web.servlet.RequestBuilder undo(long id, long version, String view) {
+        return post("/orders/{id}/undo", id).header("HX-Request", "true").with(csrf())
+                .param("version", String.valueOf(version)).param("view", view);
     }
 
     private static org.springframework.test.web.servlet.RequestBuilder transition(long id, String to, long version, String view) {

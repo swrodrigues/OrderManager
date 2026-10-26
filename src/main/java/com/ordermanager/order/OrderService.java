@@ -1,5 +1,6 @@
 package com.ordermanager.order;
 
+import com.ordermanager.audit.AuditLog;
 import com.ordermanager.audit.AuditService;
 import com.ordermanager.common.NotFoundException;
 import com.ordermanager.inventory.InsufficientStockException;
@@ -14,6 +15,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
@@ -24,6 +26,9 @@ import java.util.Set;
 @Service
 @Validated
 public class OrderService {
+
+    /** How long after a step it can still be undone. */
+    public static final Duration UNDO_WINDOW = Duration.ofMinutes(5);
 
     private final OrderRepository orders;
     private final StockService stock;
@@ -96,6 +101,66 @@ public class OrderService {
         audit.record("order", orderId, "TRANSITION", from.name(), target.name(), null);
         orders.flush(); // so the caller sees the new version
         return order;
+    }
+
+    /**
+     * Reverts the order's last step (a mis-click), with the opposite stock effect, in one transaction.
+     * Allowed only for the last step, within {@link #UNDO_WINDOW}, by the person who made it or an admin, and
+     * only if the order has not changed since the user saw it. The undo itself is audited and cannot be undone.
+     */
+    @Transactional
+    public CustomerOrder undo(long orderId, long expectedVersion) {
+        CustomerOrder order = orders.findForTransition(orderId)
+                .orElseThrow(() -> new NotFoundException("Order " + orderId + " not found"));
+        if (order.getVersion() != expectedVersion) {
+            throw new ObjectOptimisticLockingFailureException(CustomerOrder.class, orderId);
+        }
+        AuditLog last = undoableStep(order);
+        OrderStatus current = order.getStatus();
+        OrderStatus previous = OrderStatus.valueOf(last.getFromStatus());
+
+        switch (current) {
+            case ALLOCATED -> stock.release(order.qtyBySkuId());
+            case SHIPPED -> {
+                stock.unconsume(order.qtyBySkuId());
+                order.setShippedAt(null);
+            }
+            case DELIVERED -> order.setDeliveredAt(null);
+            case CANCELLED -> {
+                if (OrderStateMachine.holdsReservation(previous)) {
+                    stock.reserve(order.qtyBySkuId()); // may fail if the stock went to another order meanwhile
+                }
+            }
+            default -> { } // PICKED, PACKED: status only
+        }
+        order.setStatus(previous);
+        audit.record("order", orderId, "UNDO", current.name(), previous.name(), Map.of("undoneEntry", last.getId()));
+        orders.flush();
+        return order;
+    }
+
+    /** Whether the current user may undo this order's last step right now (drives the Undo button). */
+    @Transactional(readOnly = true)
+    public boolean canUndo(long orderId) {
+        try {
+            CustomerOrder order = orders.findForTransition(orderId).orElse(null);
+            return order != null && undoableStep(order) != null;
+        } catch (UndoNotAllowedException e) {
+            return false;
+        }
+    }
+
+    private AuditLog undoableStep(CustomerOrder order) {
+        AuditLog last = audit.last("order", order.getId())
+                .filter(a -> "TRANSITION".equals(a.getAction()) && order.getStatus().name().equals(a.getToStatus()))
+                .orElseThrow(() -> new UndoNotAllowedException("There is nothing to undo on this order"));
+        if (last.getAt().isBefore(clock.instant().minus(UNDO_WINDOW))) {
+            throw new UndoNotAllowedException("Undo is only possible within 5 minutes");
+        }
+        if (!last.getActor().equals(AuditService.currentActor()) && !AuditService.currentUserIsAdmin()) {
+            throw new UndoNotAllowedException("Only the person who made this change, or an admin, can undo it");
+        }
+        return last;
     }
 
     /** Allocates NEW orders oldest first, one transaction per order, so one short order doesn't block the rest. */

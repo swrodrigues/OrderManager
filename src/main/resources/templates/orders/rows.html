@@ -24,6 +24,14 @@
         <tr th:replace="~{::row(${r})}"></tr>
     </th:block>
 
+    <!-- Returned after Undo: the row, plus the message swapped into #flash (htmx out-of-band swap). -->
+    <th:block th:fragment="undone">
+        <tr th:replace="~{::row(${r})}"></tr>
+        <div id="flash" class="flash" hx-swap-oob="innerHTML">
+            <div th:replace="~{fragments/alert :: alert('ok', ${message})}"></div>
+        </div>
+    </th:block>
+
     <tr th:fragment="row(r)" th:id="|order-${r.id}|">
         <td><a class="mono" th:href="@{/orders/{id}(id=${r.id})}" th:text="${r.orderNo}">ORD-000001</a></td>
         <td><span class="badge" th:classappend="|s-${r.status}|" th:text="${r.status}">NEW</span></td>
@@ -39,6 +47,13 @@
                         th:hx-confirm="${s.name() == 'CANCELLED'} ? 'Cancel this order?' : null"
                         hx-target="closest tr" hx-swap="outerHTML" hx-disabled-elt="this"
                         th:text="${s.actionLabel}">Allocate
+                </button>
+                <!-- only on the row the user just changed (model attribute undoable) -->
+                <button th:if="${undoable == true}" type="button" class="btn btn-sm btn-ghost"
+                        th:hx-post="@{/orders/{id}/undo(id=${r.id})}"
+                        th:hx-vals="|{&quot;version&quot;:&quot;${r.version}&quot;,&quot;view&quot;:&quot;row&quot;}|"
+                        hx-target="closest tr" hx-swap="outerHTML" hx-disabled-elt="this"
+                        title="Undo the last step (possible for 5 minutes)">↶ Undo
                 </button>
             </div>
         </td>

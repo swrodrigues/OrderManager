@@ -31,3 +31,4 @@ Real start/end times per plan task (local time, CET). Spec phases are in `docs/s
 |---|---|---|---|---|---|---|
 | S | Spring Boot 4.1, scratch-based app image, PostgreSQL 18 (Chainguard) | 7 | 2026-10-26T09:33 | 2026-10-26T10:16 | 43 | Grype and Trivy: app 0, db 0 (was 28 / 3). 192 tests green on the new stack; PG16 → PG18 data moved by dump/restore with identical row counts |
 | J | App on Java 27 (Temurin 27+35): build, runtime image, tests | 7 | 2026-10-26T10:24 | 2026-10-26T10:39 | 15 | 192 tests green on JDK 27 (run in container via scripts/test.sh); image 129 MB; Grype and Trivy: 0 |
+| U | Undo of the last order step (5 min, same user or admin, stock reverted, audited) | 4 | 2026-10-26T11:43 | 2026-10-26T11:53 | 10 | 17 new tests (13 rules + 4 UI), 209 green on JDK 27; verified in the browser |

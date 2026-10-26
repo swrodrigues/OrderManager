@@ -59,6 +59,12 @@ public class StockService {
         skus.lockAllByIdIn(qtyBySkuId.keySet()).forEach(sku -> sku.consume(qtyBySkuId.get(sku.getId())));
     }
 
+    /** Undo of a shipment: the goods are back on the shelf and still reserved for the order. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void unconsume(Map<Long, Integer> qtyBySkuId) {
+        skus.lockAllByIdIn(qtyBySkuId.keySet()).forEach(sku -> sku.unconsume(qtyBySkuId.get(sku.getId())));
+    }
+
     /** Resolves many codes in one query. Unknown codes are simply absent from the result. */
     @Transactional(readOnly = true)
     public Map<String, Sku> findByCodes(Collection<String> codes) {

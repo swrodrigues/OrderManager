@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AuditService {
@@ -34,6 +35,17 @@ public class AuditService {
     @Transactional(readOnly = true)
     public List<AuditLog> history(String entity, long entityId) {
         return repo.findByEntityAndEntityIdOrderByAtAscIdAsc(entity, entityId);
+    }
+
+    /** The most recent entry for this entity, if any. */
+    @Transactional(readOnly = true)
+    public Optional<AuditLog> last(String entity, long entityId) {
+        return repo.findFirstByEntityAndEntityIdOrderByAtDescIdDesc(entity, entityId);
+    }
+
+    public static boolean currentUserIsAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
     public static String currentActor() {

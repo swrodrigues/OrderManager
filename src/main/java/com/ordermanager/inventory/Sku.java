@@ -48,6 +48,7 @@ public class Sku {
     void reserve(int qty) { reserved += qty; }
     void release(int qty) { reserved -= qty; }
     void consume(int qty) { onHand -= qty; reserved -= qty; }
+    void unconsume(int qty) { onHand += qty; reserved += qty; }
     void adjust(int delta) { onHand += delta; }
 
     public Long getId() { return id; }
