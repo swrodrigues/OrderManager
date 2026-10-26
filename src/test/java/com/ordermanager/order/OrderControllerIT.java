@@ -257,6 +257,16 @@ class OrderControllerIT extends IntegrationTest {
                 .andExpect(content().string(containsString("CREATE")));
     }
 
+    /** Regression: the Undo response block was rendered on every order page, showing the order twice. */
+    @Test
+    void orderPageShowsTheOrderOnce() throws Exception {
+        long id = data.order("EXT-1", Map.of("A", 1));
+        String html = mvc.perform(get("/orders/{id}", id)).andReturn().getResponse().getContentAsString();
+        assertThat(html.split("id=\"order-panel\"", -1)).hasSize(2);
+        assertThat(html.split("id=\"flash\"", -1)).hasSize(2);
+        assertThat(html).doesNotContain("hx-swap-oob");
+    }
+
     @Test
     void footerShowsRenderTime() throws Exception {
         mvc.perform(get("/orders"))

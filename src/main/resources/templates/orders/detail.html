@@ -86,14 +86,15 @@
             </table>
         </div>
     </section>
-
-    <!-- Returned after Undo on this page: the panel, plus the message swapped into #flash (out-of-band). -->
-    <th:block th:fragment="panelWithMessage">
-        <section th:replace="~{orders/detail :: panel}"></section>
-        <div id="flash" class="flash" hx-swap-oob="innerHTML">
-            <div th:replace="~{fragments/alert :: alert('ok', ${message})}"></div>
-        </div>
-    </th:block>
 </main>
+
+<!-- Returned after Undo on this page: the panel, plus the message swapped into #flash (out-of-band).
+     Kept outside <main> so it is never part of the normal page (the layout only takes <main>). -->
+<th:block th:fragment="panelWithMessage">
+    <section th:replace="~{orders/detail :: panel}"></section>
+    <div id="flash" class="flash" hx-swap-oob="innerHTML">
+        <div th:replace="~{fragments/alert :: alert('ok', ${message})}"></div>
+    </div>
+</th:block>
 </body>
 </html>
