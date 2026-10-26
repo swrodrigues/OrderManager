@@ -1,0 +1,8 @@
+external_ref,ship_to_name,ship_to_address,ship_to_phone,sku_code,qty
+SAMPLE-1001,Zoë Müller,"Kerkstraat 12, 9000 Gent",+32 9 123 45 67,SKU-001,4
+SAMPLE-1001,Zoë Müller,"Kerkstraat 12, 9000 Gent",+32 9 123 45 67,SKU-007,1
+SAMPLE-1002,Jan Peeters,"Markt 3 bus 2, 2000 Antwerpen",,SKU-003,2
+SAMPLE-1003,Anouk de Vries,"Prinsengracht 263, 1016 GV Amsterdam",+31 20 555 0101,SKU-012,6
+SAMPLE-1003,Anouk de Vries,"Prinsengracht 263, 1016 GV Amsterdam",+31 20 555 0101,SKU-020,2
+SAMPLE-1004,Luc Martin,"Rue de l'Église 5, 4000 Liège",+32 4 222 33 44,SKU-005,1
+SAMPLE-1005,Sofia Rossi,"Coolsingel 40, 3011 AD Rotterdam",,SKU-033,3

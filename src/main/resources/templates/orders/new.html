@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+    <title>New order · OrderManager</title>
+</head>
+<body>
+<main>
+    <h1>New order</h1>
+
+    <form th:action="@{/orders}" th:object="${form}" method="post" class="stack" id="new-order">
+        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-error" role="alert">
+            <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">error</div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card stack">
+                <label>Ship-to name
+                    <input type="text" th:field="*{shipToName}" maxlength="120" required>
+                    <span class="field-error" th:if="${#fields.hasErrors('shipToName')}" th:errors="*{shipToName}"></span>
+                </label>
+                <label>Address
+                    <textarea th:field="*{shipToAddress}" maxlength="500" required></textarea>
+                    <span class="field-error" th:if="${#fields.hasErrors('shipToAddress')}" th:errors="*{shipToAddress}"></span>
+                </label>
+                <label>Phone (optional)
+                    <input type="tel" th:field="*{shipToPhone}" maxlength="40">
+                    <span class="field-error" th:if="${#fields.hasErrors('shipToPhone')}" th:errors="*{shipToPhone}"></span>
+                </label>
+                <label>External reference (optional, must be unique)
+                    <input type="text" th:field="*{externalRef}" maxlength="64">
+                    <span class="field-error" th:if="${#fields.hasErrors('externalRef')}" th:errors="*{externalRef}"></span>
+                </label>
+            </div>
+
+            <div class="card stack">
+                <h2>Lines</h2>
+                <span class="field-error" th:if="${#fields.hasErrors('lines')}" th:errors="*{lines}"></span>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th class="num">Qty</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="lines">
+                    <tr th:each="line, st : *{lines}" class="line-row">
+                        <td>
+                            <select th:field="*{lines[__${st.index}__].skuCode}" data-line-field="skuCode">
+                                <option value="">Choose SKU…</option>
+                                <option th:each="s : ${skus}" th:value="${s.code}"
+                                        th:text="|${s.code} · ${s.name} (${s.available()} available)|">SKU</option>
+                            </select>
+                            <span class="field-error" th:if="${#fields.hasErrors('lines[__${st.index}__].skuCode')}"
+                                  th:errors="*{lines[__${st.index}__].skuCode}"></span>
+                        </td>
+                        <td class="num">
+                            <input type="number" min="1" max="100000" th:field="*{lines[__${st.index}__].qty}"
+                                   data-line-field="qty">
+                            <span class="field-error" th:if="${#fields.hasErrors('lines[__${st.index}__].qty')}"
+                                  th:errors="*{lines[__${st.index}__].qty}"></span>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-ghost" data-remove-line>Remove</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div>
+                    <button type="button" class="btn btn-sm" data-add-line>+ Add line</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Create order</button>
+            <a class="btn btn-ghost" th:href="@{/orders}">Cancel</a>
+        </div>
+    </form>
+
+    <!-- Blank line row cloned by app.js -->
+    <template id="line-template">
+        <tr class="line-row">
+            <td>
+                <select data-line-field="skuCode">
+                    <option value="">Choose SKU…</option>
+                    <option th:each="s : ${skus}" th:value="${s.code}"
+                            th:text="|${s.code} · ${s.name} (${s.available()} available)|">SKU</option>
+                </select>
+            </td>
+            <td class="num"><input type="number" min="1" max="100000" data-line-field="qty"></td>
+            <td>
+                <button type="button" class="btn btn-sm btn-ghost" data-remove-line>Remove</button>
+            </td>
+        </tr>
+    </template>
+</main>
+</body>
+</html>

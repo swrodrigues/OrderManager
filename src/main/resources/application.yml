@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: order-manager
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+      # keep uploads in memory: CSVs contain plaintext addresses and must never touch the disk
+      file-size-threshold: 6MB
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 500
+        order_inserts: true
+        order_updates: true
+
+server:
+  tomcat:
+    # read (and discard) oversized uploads so the browser receives our "larger than 5 MB" message
+    # instead of a reset connection
+    max-swallow-size: 10MB
+  error:
+    whitelabel:
+      enabled: false
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${APP_COOKIE_SECURE:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  enc-key: ${APP_ENC_KEY:}
+  admin-username: ${APP_ADMIN_USERNAME:}
+  admin-password: ${APP_ADMIN_PASSWORD:}
+  time-zone: ${APP_TIME_ZONE:Europe/Amsterdam}

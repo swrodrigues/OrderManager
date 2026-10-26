@@ -1,0 +1,14 @@
+app:
+  enc-key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+  admin-username: admin
+  admin-password: test-admin-password-123
+spring:
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true
+        session_factory:
+          statement_inspector: com.ordermanager.SqlCapture
+logging:
+  level:
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: warn

@@ -1,0 +1,7 @@
+target/
+.git/
+.superpowers/
+.env
+backups/
+docs/
+*.md

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- included from other templates: ~{fragments/alert :: alert('ok', ${msg})} -->
+<div th:fragment="alert(kind, message)" class="alert" th:classappend="${kind == 'ok'} ? 'alert-ok' : 'alert-error'"
+     role="status" th:text="${message}">message</div>
+
+<!-- returned directly as a view ("fragments/alert :: flash"); reads model attributes kind and message -->
+<div th:fragment="flash" class="alert" th:classappend="${kind == 'ok'} ? 'alert-ok' : 'alert-error'"
+     role="status" th:text="${message}">message</div>
+</body>
+</html>

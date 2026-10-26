@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<table>
+    <tbody>
+    <!-- One page of rows plus the "Load more" row. Swapped into #order-rows, or in place of the previous "Load more" row. -->
+    <th:block th:fragment="rows">
+        <th:block th:each="r : ${page.rows}"><tr th:replace="~{::row(${r})}"></tr></th:block>
+        <tr th:if="${page.rows.isEmpty()}">
+            <td colspan="6" class="muted">No orders match.</td>
+        </tr>
+        <tr th:if="${page.next != null}" class="load-more">
+            <td colspan="6">
+                <button class="btn"
+                        th:hx-get="@{/orders(status=${filter.status}, q=${filter.prefixOrNull()}, after=${page.next.encode()})}"
+                        hx-target="closest tr" hx-swap="outerHTML" hx-disabled-elt="this">Load more
+                </button>
+            </td>
+        </tr>
+    </th:block>
+
+    <!-- Returned after a row action; reads model attribute r. -->
+    <th:block th:fragment="single">
+        <tr th:replace="~{::row(${r})}"></tr>
+    </th:block>
+
+    <tr th:fragment="row(r)" th:id="|order-${r.id}|">
+        <td><a class="mono" th:href="@{/orders/{id}(id=${r.id})}" th:text="${r.orderNo}">ORD-000001</a></td>
+        <td><span class="badge" th:classappend="|s-${r.status}|" th:text="${r.status}">NEW</span></td>
+        <td th:text="${r.shipToName}">name</td>
+        <td class="num" th:text="${r.lineCount}">1</td>
+        <td th:text="${@fmt.dateTime(r.createdAt)}">2026-01-01 10:00</td>
+        <td>
+            <div class="actions">
+                <button th:each="s : ${r.nextStatuses()}" type="button" class="btn btn-sm"
+                        th:classappend="${s.name() == 'CANCELLED'} ? 'btn-danger'"
+                        th:hx-post="@{/orders/{id}/transition(id=${r.id})}"
+                        th:hx-vals="|{&quot;to&quot;:&quot;${s}&quot;,&quot;version&quot;:&quot;${r.version}&quot;,&quot;view&quot;:&quot;row&quot;}|"
+                        th:hx-confirm="${s.name() == 'CANCELLED'} ? 'Cancel this order?' : null"
+                        hx-target="closest tr" hx-swap="outerHTML" hx-disabled-elt="this"
+                        th:text="${s.actionLabel}">Allocate
+                </button>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

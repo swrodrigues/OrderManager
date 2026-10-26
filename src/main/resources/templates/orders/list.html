@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+    <title>Orders · OrderManager</title>
+</head>
+<body>
+<main>
+    <div class="page-head">
+        <h1>Orders</h1>
+        <div class="actions">
+            <button type="button" class="btn" hx-post="/orders/bulk-allocate" hx-target="#flash"
+                    hx-disabled-elt="this">Bulk allocate NEW orders
+            </button>
+            <a class="btn btn-primary" th:href="@{/orders/new}">New order</a>
+        </div>
+    </div>
+
+    <form id="filters" class="toolbar" th:action="@{/orders}" method="get"
+          hx-get="/orders" hx-target="#order-rows" hx-trigger="change, keyup changed delay:300ms from:#q, submit">
+        <label>Status
+            <select name="status">
+                <option value="">All</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                        th:selected="${filter.status == s}">NEW</option>
+            </select>
+        </label>
+        <label>Order number
+            <input id="q" type="search" name="q" placeholder="ORD-000…" th:value="${filter.orderNoPrefix}"
+                   autocomplete="off">
+        </label>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Order</th>
+                <th>Status</th>
+                <th>Ship to</th>
+                <th class="num">Lines</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="order-rows">
+            <th:block th:replace="~{orders/rows :: rows}"></th:block>
+            </tbody>
+        </table>
+    </div>
+    <!-- Refreshes the rows after bulk allocate. Kept outside the table so the rows' own buttons
+         (e.g. "Load more") do not inherit hx-include and send the filters twice. -->
+    <div hidden hx-get="/orders" hx-include="#filters" hx-target="#order-rows"
+         hx-trigger="orders-changed from:body"></div>
+</main>
+</body>
+</html>

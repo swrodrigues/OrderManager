@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+    <title>Import orders · OrderManager</title>
+</head>
+<body>
+<main>
+    <h1>Import orders</h1>
+
+    <div class="grid-2">
+        <form class="card stack" th:action="@{/import}" method="post" enctype="multipart/form-data"
+              hx-post="/import" hx-encoding="multipart/form-data" hx-target="#import-result"
+              hx-disabled-elt="find button">
+            <label>CSV file (max 5 MB, 20,000 rows)
+                <input type="file" name="file" accept=".csv,text/csv" required>
+            </label>
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">Upload and import</button>
+                <a class="btn btn-ghost" th:href="@{/sample-orders.csv}" download>Download sample CSV</a>
+            </div>
+        </form>
+
+        <div class="card">
+            <h2>Format</h2>
+            <p>One row per order line, comma-separated, UTF-8. Rows with the same <span class="mono">external_ref</span>
+                form one order.</p>
+            <p class="mono" th:text="${header}">header</p>
+            <ul class="muted">
+                <li>An order with any invalid line is rejected as a whole; other orders still import.</li>
+                <li>The same file cannot be imported twice; existing external refs are skipped.</li>
+                <li>Excel files saved as "CSV UTF-8 (comma delimited)" work as-is.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="import-result">
+        <th:block th:if="${message}"><div th:replace="~{fragments/alert :: alert(${kind}, ${message})}"></div></th:block>
+        <th:block th:if="${result}"><div th:replace="~{import/result :: result}"></div></th:block>
+    </div>
+</main>
+</body>
+</html>

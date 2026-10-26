@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+    <title>Users · OrderManager</title>
+</head>
+<body>
+<main>
+    <h1>Users</h1>
+    <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}">error</div>
+
+    <form class="card row" th:action="@{/admin/users}" method="post">
+        <label>Username
+            <input type="text" name="username" required minlength="3" maxlength="50" autocomplete="off">
+        </label>
+        <label>Password (min 12 characters)
+            <input type="password" name="password" required minlength="12" autocomplete="new-password">
+        </label>
+        <label>Role
+            <select name="role">
+                <option th:each="r : ${roles}" th:value="${r}" th:text="${r}" th:selected="${r.name() == 'OPERATOR'}">OPERATOR</option>
+            </select>
+        </label>
+        <button type="submit" class="btn btn-primary">Add user</button>
+    </form>
+
+    <h2>All users</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Reset password</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${users}">
+                <td th:text="${u.username}">name</td>
+                <td th:text="${u.role}">OPERATOR</td>
+                <td>
+                    <span th:if="${!u.enabled}" class="badge s-CANCELLED">disabled</span>
+                    <span th:if="${u.enabled and u.isLockedAt(T(java.time.Instant).now())}" class="badge s-PACKED">locked</span>
+                    <span th:if="${u.enabled and !u.isLockedAt(T(java.time.Instant).now())}" class="badge s-DELIVERED">active</span>
+                </td>
+                <td>
+                    <form class="row" th:action="@{/admin/users/{id}/password(id=${u.id})}" method="post">
+                        <input type="password" name="password" required minlength="12" placeholder="new password"
+                               autocomplete="new-password">
+                        <button type="submit" class="btn btn-sm">Reset</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{/admin/users/{id}/enabled(id=${u.id})}" method="post">
+                        <input type="hidden" name="enabled" th:value="${!u.enabled}">
+                        <button type="submit" class="btn btn-sm" th:classappend="${u.enabled} ? 'btn-danger'"
+                                th:text="${u.enabled} ? 'Disable' : 'Enable'">Disable</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

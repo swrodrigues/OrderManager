@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="page(title, content)">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:replace="${title}">OrderManager</title>
+    <meta name="htmx-config"
+          content='{"includeIndicatorStyles":false,"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"(400|403|404|409|422|500)","swap":true,"error":false},{"code":"[45]..","swap":false,"error":true}]}'>
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/js/htmx.min.js}" defer></script>
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body th:hx-headers="|{&quot;${_csrf.headerName}&quot;: &quot;${_csrf.token}&quot;}|">
+<header class="topbar">
+    <a class="brand" th:href="@{/orders}">OrderManager</a>
+    <nav>
+        <a th:href="@{/orders}">Orders</a>
+        <a th:href="@{/orders/new}">New order</a>
+        <a th:href="@{/import}">Import</a>
+        <a th:href="@{/dashboard}">Dashboard</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/skus}">Stock</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users}">Users</a>
+    </nav>
+    <form class="logout" th:action="@{/logout}" method="post">
+        <span class="who" sec:authentication="name">user</span>
+        <button type="submit" class="btn btn-ghost">Log out</button>
+    </form>
+</header>
+<div id="flash" class="flash" aria-live="polite">
+    <th:block th:if="${flash}"><div th:replace="~{fragments/alert :: alert('ok', ${flash})}"></div></th:block>
+</div>
+<main th:replace="${content}">content</main>
+<footer class="footer">
+    <span>OrderManager MVP</span>
+    <span th:text="|rendered in ${@timing.elapsedMs()} ms|">rendered in 0 ms</span>
+</footer>
+</body>
+</html>

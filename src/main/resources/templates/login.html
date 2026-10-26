@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Log in · OrderManager</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="login-page">
+<main class="login-card">
+    <h1>OrderManager</h1>
+    <p class="muted">Sign in to manage orders</p>
+    <div th:if="${param.error}" class="alert alert-error" role="alert">
+        Invalid username or password, or account temporarily locked.
+    </div>
+    <div th:if="${param.logout}" class="alert alert-ok" role="status">You have been logged out.</div>
+    <div th:if="${param.expired}" class="alert alert-error" role="status">Your session expired. Please log in again.</div>
+    <form th:action="@{/login}" method="post" class="stack">
+        <label>Username
+            <input type="text" name="username" autocomplete="username" required autofocus>
+        </label>
+        <label>Password
+            <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit" class="btn btn-primary">Log in</button>
+    </form>
+</main>
+</body>
+</html>

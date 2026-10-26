@@ -1,0 +1,36 @@
+services:
+  db:
+    # PostgreSQL 18 on a pinned Chainguard image, running as the postgres user (see docker/postgres/Dockerfile)
+    build: ./docker/postgres
+    image: ordermanager-db
+    environment:
+      POSTGRES_DB: ordermanager
+      POSTGRES_USER: ordermanager
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata18:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ordermanager -d ordermanager"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    # no "ports:" on purpose: the database is reachable only from the app container
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ordermanager?reWriteBatchedInserts=true
+      SPRING_DATASOURCE_USERNAME: ordermanager
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  # PostgreSQL 18 data (the PostgreSQL 16 volume "pgdata" is no longer used)
+  pgdata18:

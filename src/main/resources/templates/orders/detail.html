@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+    <title th:text="|${order.orderNo} · OrderManager|">Order · OrderManager</title>
+</head>
+<body>
+<main>
+    <p><a th:href="@{/orders}">← Orders</a></p>
+
+    <section id="order-panel" th:fragment="panel">
+        <div class="page-head">
+            <h1>
+                <span class="mono" th:text="${order.orderNo}">ORD-000001</span>
+                <span class="badge" th:classappend="|s-${order.status}|" th:text="${order.status}">NEW</span>
+            </h1>
+            <div class="actions">
+                <button th:each="s : ${next}" type="button" class="btn"
+                        th:classappend="${s.name() == 'CANCELLED'} ? 'btn-danger' : 'btn-primary'"
+                        th:hx-post="@{/orders/{id}/transition(id=${order.id})}"
+                        th:hx-vals="|{&quot;to&quot;:&quot;${s}&quot;,&quot;version&quot;:&quot;${order.version}&quot;,&quot;view&quot;:&quot;detail&quot;}|"
+                        th:hx-confirm="${s.name() == 'CANCELLED'} ? 'Cancel this order?' : null"
+                        hx-target="#order-panel" hx-swap="outerHTML" hx-disabled-elt="this"
+                        th:text="${s.actionLabel}">Allocate
+                </button>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>Ship to</h2>
+                <dl class="props">
+                    <dt>Name</dt>
+                    <dd th:text="${order.shipToName}">name</dd>
+                    <dt>Address</dt>
+                    <dd th:text="${order.shipToAddress}">address</dd>
+                    <dt>Phone</dt>
+                    <dd th:text="${order.shipToPhone} ?: '—'">phone</dd>
+                    <dt>External ref</dt>
+                    <dd class="mono" th:text="${order.externalRef} ?: '—'">ref</dd>
+                    <dt>Created</dt>
+                    <dd th:text="|${@fmt.dateTime(order.createdAt)} by ${order.createdBy}|">created</dd>
+                    <dt>Shipped</dt>
+                    <dd th:text="${@fmt.dateTime(order.shippedAt)}">—</dd>
+                    <dt>Delivered</dt>
+                    <dd th:text="${@fmt.dateTime(order.deliveredAt)}">—</dd>
+                </dl>
+                <p class="muted">Address and phone are stored encrypted (AES-256-GCM).</p>
+            </div>
+
+            <div class="card">
+                <h2>History</h2>
+                <ul class="timeline">
+                    <li th:each="h : ${history}">
+                        <strong th:text="${h.action}">CREATE</strong>
+                        <span th:if="${h.fromStatus != null}" th:text="|${h.fromStatus} → ${h.toStatus}|"></span>
+                        <span class="muted" th:text="|${@fmt.dateTime(h.at)} · ${h.actor}|">time · actor</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>Lines</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th class="num">Qty</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="l : ${order.lines}">
+                    <td class="mono" th:text="${l.sku.code}">SKU</td>
+                    <td th:text="${l.sku.name}">name</td>
+                    <td class="num" th:text="${l.qty}">1</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

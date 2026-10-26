@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+    <title>Stock · OrderManager</title>
+</head>
+<body>
+<main>
+    <h1>Stock</h1>
+    <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}">error</div>
+
+    <form class="card row" th:action="@{/admin/skus}" method="post">
+        <label>Code
+            <input type="text" name="code" required maxlength="40" pattern="[A-Za-z0-9._\-]{1,40}">
+        </label>
+        <label>Name
+            <input type="text" name="name" required maxlength="120">
+        </label>
+        <label>On hand
+            <input type="number" name="onHand" required min="0" value="0">
+        </label>
+        <button type="submit" class="btn btn-primary">Add SKU</button>
+    </form>
+
+    <h2>SKUs</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th class="num">On hand</th>
+                <th class="num">Reserved</th>
+                <th class="num">Available</th>
+                <th>Adjust (audited)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${skus}">
+                <td class="mono" th:text="${s.code}">SKU</td>
+                <td th:text="${s.name}">name</td>
+                <td class="num" th:text="${s.onHand}">0</td>
+                <td class="num" th:text="${s.reserved}">0</td>
+                <td class="num" th:text="${s.available()}">0</td>
+                <td>
+                    <form class="row" th:action="@{/admin/skus/{id}/adjust(id=${s.id})}" method="post">
+                        <input type="number" name="delta" required placeholder="+/- qty" aria-label="Quantity change">
+                        <input type="text" name="reason" required maxlength="200" placeholder="reason" aria-label="Reason">
+                        <button type="submit" class="btn btn-sm">Apply</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

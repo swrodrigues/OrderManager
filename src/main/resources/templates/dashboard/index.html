@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: page(~{::head/title}, ~{::main})}">
+<head>
+    <title>Dashboard · OrderManager</title>
+</head>
+<body>
+<main>
+    <h1>Dashboard</h1>
+
+    <div class="tiles">
+        <div class="tile">
+            <div class="label">Open orders</div>
+            <div class="value" th:text="${open}">0</div>
+        </div>
+        <div class="tile">
+            <div class="label">Avg time to ship (30 days)</div>
+            <div class="value" th:text="${@fmt.duration(kpis.avgTimeToShip)}">—</div>
+        </div>
+        <div class="tile">
+            <div class="label">Stock-outs (SKUs)</div>
+            <div class="value" th:text="${kpis.stockOuts}">0</div>
+        </div>
+    </div>
+
+    <div class="tiles">
+        <a class="tile" th:each="b : ${bars}" th:href="@{/orders(status=${b.label})}">
+            <div class="label" th:text="${b.label}">NEW</div>
+            <div class="value" th:text="${b.count}">0</div>
+        </a>
+    </div>
+
+    <div class="card">
+        <h2>Orders by status</h2>
+        <svg class="chart" role="img" aria-label="Orders by status"
+             th:attr="viewBox=|0 0 ${chartWidth} 220|" preserveAspectRatio="xMinYMin meet">
+            <line class="axis" x1="10" th:attr="y1=${baseline}, y2=${baseline}, x2=${chartWidth - 10}"/>
+            <g th:each="b : ${bars}" class="bar-group">
+                <title th:text="${b.tooltip}">NEW: 0 orders</title>
+                <!-- invisible hit target larger than the mark -->
+                <rect class="hit" th:attr="x=${b.x - 8}, y=10, width=72, height=${baseline + 25}"/>
+                <path class="bar" th:if="${!#strings.isEmpty(b.path)}" th:attr="d=${b.path}"/>
+                <text class="bar-label" text-anchor="middle" th:attr="x=${b.labelX}, y=${b.valueY}"
+                      th:text="${b.count}">0</text>
+                <text text-anchor="middle" th:attr="x=${b.labelX}, y=${baseline + 18}" th:text="${b.label}">NEW</text>
+            </g>
+        </svg>
+    </div>
+</main>
+</body>
+</html>
