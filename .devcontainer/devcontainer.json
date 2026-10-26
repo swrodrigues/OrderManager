@@ -1,0 +1,29 @@
+{
+  // GitHub Codespaces: builds and starts OrderManager, then opens it in the browser.
+  "name": "OrderManager",
+  "image": "mcr.microsoft.com/devcontainers/base:1.2.5-ubuntu-24.04",
+  "features": {
+    // the app runs with Docker Compose inside the codespace
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {}
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb"
+  },
+  // once: demo secrets for this codespace (.env, never committed)
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  // every start: build and start the app and database
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "OrderManager",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": [".devcontainer/WELCOME.md"]
+    }
+  }
+}

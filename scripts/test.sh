@@ -10,5 +10,6 @@ MSYS_NO_PATHCONV=1 docker run --rm \
   -v ordermanager-m2:/root/.m2 \
   -v //var/run/docker.sock:/var/run/docker.sock \
   -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal \
+  --add-host=host.docker.internal:host-gateway \
   maven:3-eclipse-temurin-27@sha256:095c056353550ea93605f9cbd200a7cbbc489a1989eeec8b8600749a157a0096 \
   mvn -B -q test "$@"

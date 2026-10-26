@@ -17,6 +17,21 @@ Built with AI assistance using Claude Code.
 
 ---
 
+## Try it in your browser (no install)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/swrodrigues/OrderManager?quickstart=1)
+
+1. Click the button above (or on GitHub: **Code → Codespaces → Create codespace on main**). A free GitHub
+   account is enough; it uses your personal Codespaces allowance.
+2. The codespace builds and starts the app and database by itself. The first start takes a few minutes
+   (progress in the **Terminal** panel); then the app opens in a new browser tab. If it doesn't, open the
+   **Ports** tab and click the globe icon next to port **8080**.
+3. Log in with **`admin` / `reviewer-demo-2026`**. Demo data (50 SKUs, 1,000 orders) is created on first start.
+
+The codespace and its URL are private to you, served over HTTPS, with secrets generated for that codespace
+only. The code is right there too: run `scripts/test.sh` in its terminal for the full test suite. Stop the
+codespace when done (it also stops by itself after inactivity) so it does not use up your allowance.
+
 ## Quick start
 
 You need only Docker. Maven runs inside the build container.
